@@ -249,3 +249,11 @@ export function resetGameToStarterState(starterCount: number): void {
   localStorage.removeItem(STORAGE_KEYS.SAVED_HAND_MODE);
 }
 
+/**
+ * Unlocks all characters in the user's collection/deck, making them available for play.
+ */
+export function unlockAllCards(): void {
+  const allIds = ALL_CARDS.map((c) => c.id);
+  saveOwnedCardIds(allIds);
+}
+

@@ -17,7 +17,8 @@ import { CharacterIndex } from './components/CharacterIndex';
 import { StatisticsScreen } from './components/StatisticsScreen';
 import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { audio } from './utils/audio';
-import { resetGameToStarterState } from './utils/storage';
+import { resetGameToStarterState, unlockAllCards } from './utils/storage';
+import confetti from 'canvas-confetti';
 import arcadeRoomBgImg from './assets/images/retro_arcade_room_bg_1790889734967.jpg';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
   const [stats, setStats] = useState<GameStatistics>(() => getGameStats());
   const [ownedCards, setOwnedCards] = useState<Card[]>(() => getOwnedCards());
   const [showResetModal, setShowResetModal] = useState<boolean>(false);
+  const [unlockToast, setUnlockToast] = useState<string | null>(null);
 
   // Mount BGM check and first-click activation
   useEffect(() => {
@@ -80,6 +82,26 @@ export default function App() {
   const handleResetConfirm = () => {
     resetGameToStarterState(5);
     window.location.reload(); // Hard refresh to clear state and reinitialize
+  };
+
+  const handleUnlockAll = () => {
+    unlockAllCards();
+    refreshOwned();
+    audio.playVictory();
+    try {
+      confetti({
+        particleCount: 90,
+        spread: 80,
+        origin: { y: 0.2 },
+        colors: ['#f59e0b', '#fbbf24', '#fef08a', '#d97706', '#ffffff'],
+      });
+    } catch {
+      // Safe fallback
+    }
+    setUnlockToast('🧀 CHEESE CODE ACTIVATED: All Fighters Unlocked in Deck!');
+    setTimeout(() => {
+      setUnlockToast(null);
+    }, 4000);
   };
 
   /**
@@ -201,12 +223,20 @@ export default function App() {
         </>
       )}
 
+      {/* Toast Notification */}
+      {unlockToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-400 text-slate-950 font-arcade text-xs md:text-sm font-bold px-5 py-2.5 rounded-full shadow-[0_0_25px_rgba(245,158,11,0.6)] border-2 border-amber-300 animate-bounce flex items-center gap-2">
+          <span>{unlockToast}</span>
+        </div>
+      )}
+
       {/* Top Header Navigation */}
       <div className="relative z-10 w-full">
         <HeaderNav
           currentScreen={currentScreen}
           onNavigate={(screen) => setCurrentScreen(screen)}
           onOpenReset={() => setShowResetModal(true)}
+          onUnlockAllCards={handleUnlockAll}
         />
       </div>
 
@@ -257,6 +287,7 @@ export default function App() {
 
         {currentScreen === 'COLLECTION' && (
           <CardCollection
+            key={`collection-${ownedCards.length}`}
             onBackToMenu={() => setCurrentScreen('MENU')}
             onRefreshOwned={refreshOwned}
           />

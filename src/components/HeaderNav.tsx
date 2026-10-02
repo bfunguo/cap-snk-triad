@@ -3,13 +3,39 @@ import { AppScreen } from '../types/game';
 import { audio } from '../utils/audio';
 import { Volume2, VolumeX, Music, Swords, RotateCcw, Home } from 'lucide-react';
 
+export const CheeseIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M2.5 13.5L18.5 4C20.5 5.5 22 8.5 22 12V18.5C22 19.3 21.3 20 20.5 20H3.5C2.7 20 2 19.3 2 18.5V14.5C2 14 2.2 13.6 2.5 13.5Z" />
+    <path d="M2 14.5H22" />
+    <circle cx="7" cy="17.5" r="1" fill="currentColor" />
+    <circle cx="13" cy="17" r="1.5" fill="currentColor" />
+    <circle cx="18.5" cy="16.5" r="1" fill="currentColor" />
+    <circle cx="11.5" cy="9.5" r="1.2" fill="currentColor" />
+    <circle cx="16.5" cy="8" r="0.8" fill="currentColor" />
+  </svg>
+);
+
 interface HeaderNavProps {
   currentScreen: AppScreen;
   onNavigate: (screen: AppScreen) => void;
   onOpenReset: () => void;
+  onUnlockAllCards?: () => void;
 }
 
-export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate, onOpenReset }) => {
+export const HeaderNav: React.FC<HeaderNavProps> = ({
+  currentScreen,
+  onNavigate,
+  onOpenReset,
+  onUnlockAllCards,
+}) => {
   const [isMuted, setIsMuted] = React.useState<boolean>(() => audio.getMuted());
   const [isBgmOn, setIsBgmOn] = React.useState<boolean>(() => audio.isBGMPlaying());
 
@@ -146,6 +172,19 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate,
               <span>Fight</span>
             </button>
           )}
+
+          {/* Cheese Unlock Button */}
+          <button
+            onClick={() => {
+              audio.playCardSelect();
+              onUnlockAllCards?.();
+            }}
+            className="p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 hover:bg-amber-900/60 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+            title="Cheese Code: Unlock all characters in deck & available for play!"
+            aria-label="Unlock all characters in deck"
+          >
+            <CheeseIcon className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>

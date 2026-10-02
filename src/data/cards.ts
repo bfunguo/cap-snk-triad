@@ -336,7 +336,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1993,
     country: 'United States',
     originalGameDebut: 'Street Fighter II (1991)',
-    values: { top: 5, right: 7, bottom: 9, left: 6 },
+    values: { top: 5, right: 8, bottom: 9, left: 5 },
     bio: 'U.S. Air Force Major who channels sonic shockwaves to avenger fallen comrades.',
     quote: 'Go home and be a family man!',
     signatureColor: '#84cc16',
@@ -444,7 +444,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1993,
     country: 'Spain',
     originalGameDebut: 'Street Fighter II (1991)',
-    values: { top: 5, right: 8, bottom: 5, left: 8 },
+    values: { top: 10, right: 5, bottom: 1, left: 4 },
     bio: 'Vanity-obsessed matador assassin armed with a claw and aerial acrobatics.',
     quote: 'Beauty is truth, and ugly things must perish!',
     signatureColor: '#9333ea',
@@ -516,7 +516,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1993,
     country: 'Hong Kong',
     originalGameDebut: 'Super Street Fighter II (1993)',
-    values: { top: 6, right: 8, bottom: 7, left: 5 },
+    values: { top: 10, right: 6, bottom: 1, left: 6 },
     bio: 'Hong Kong film star and master of Hitenryu kung fu inspired by Bruce Lee.',
     quote: 'There could never be another like me!',
     signatureColor: '#e11d48',
@@ -1008,7 +1008,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1997,
     country: 'Japan',
     originalGameDebut: "The King of Fighters '94 (1994)",
-    values: { top: 8, right: 7, bottom: 6, left: 8 },
+    values: { top: 4, right: 10, bottom: 5, left: 10 },
     bio: 'Heir to the ancient Kusanagi lineage wielding sacred divine sun fire against the Orochi threat.',
     quote: 'Body ga... ameze! My flames will burn you to cinders!',
     signatureColor: '#ea580c',
@@ -1074,7 +1074,7 @@ const ALL_CARDS_RAW: Card[] = [
   { id: 'chris', name: 'Chris', title: 'The Child of Destiny', series: "The King of Fighters '97", earliestGame: "The King of Fighters '97", releaseYear: 1997, country: 'Sweden', originalGameDebut: "The King of Fighters '97", values: { top: 6, right: 8, bottom: 6, left: 8 }, bio: 'A young boy who seems innocent but hides a dark power.', quote: 'Hehehe...', signatureColor: '#38bdf8', accentColor: '#ffffff', fightingStyle: 'Speed', avatarSymbol: 'star', imageUrl: chrisImg },
   { id: 'clark', name: 'Clark Still', title: 'The Mercenary Grappler', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'United States', originalGameDebut: "The King of Fighters '94", values: { top: 7, right: 7, bottom: 8, left: 6 }, bio: 'Ikari mercenary known for powerful wrestling throws.', quote: 'Mission complete.', signatureColor: '#475569', accentColor: '#ffffff', fightingStyle: 'Wrestling', avatarSymbol: 'fist', imageUrl: clarkImg },
   { id: 'eiji', name: 'Eiji Kisaragi', title: 'The Revenge-Driven Ninja', series: "The King of Fighters '97", earliestGame: "The King of Fighters '95", releaseYear: 1997, country: 'Japan', originalGameDebut: "The King of Fighters '95", values: { top: 6, right: 8, bottom: 6, left: 7 }, bio: 'A ninja seeking revenge against the Kyokugen style.', quote: 'I will destroy you.', signatureColor: '#7c3aed', accentColor: '#ffffff', fightingStyle: 'Ninjutsu', avatarSymbol: 'sword', imageUrl: eijiImg },
-  { id: 'heidern', name: 'Heidern', title: 'The Ikari Commander', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'Unknown', originalGameDebut: "The King of Fighters '94", values: { top: 8, right: 7, bottom: 8, left: 7 }, bio: 'Commander of the Ikari Warriors, master of assassination.', quote: 'Target acquired.', signatureColor: '#1e3a8a', accentColor: '#ffffff', fightingStyle: 'Assassination', avatarSymbol: 'knife', imageUrl: heidernImg },
+  { id: 'heidern', name: 'Heidern', title: 'The Ikari Commander', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'Unknown', originalGameDebut: "The King of Fighters '94", values: { top: 10, right: 3, bottom: 4, left: 3 }, bio: 'Commander of the Ikari Warriors, master of assassination.', quote: 'Target acquired.', signatureColor: '#1e3a8a', accentColor: '#ffffff', fightingStyle: 'Assassination', avatarSymbol: 'knife', imageUrl: heidernImg },
   { id: 'mature', name: 'Mature', title: 'The Cold Enforcer', series: "The King of Fighters '97", earliestGame: "The King of Fighters '96", releaseYear: 1997, country: 'Unknown', originalGameDebut: "The King of Fighters '96", values: { top: 6, right: 8, bottom: 6, left: 7 }, bio: 'One of Rugal’s secretaries, cold and ruthless.', quote: 'Die.', signatureColor: '#4c1d95', accentColor: '#ffffff', fightingStyle: 'Slashing', avatarSymbol: 'claw', imageUrl: matureImg },
   { id: 'maxima', name: 'Maxima', title: 'The Tech-Tank', series: 'The King of Fighters 2001', earliestGame: "The King of Fighters '99", releaseYear: 2001, country: 'Canada', originalGameDebut: "The King of Fighters '99", values: { top: 8, right: 6, bottom: 9, left: 5 }, bio: 'Cyborg warrior looking for vengeance against NESTS.', quote: 'Target locked.', signatureColor: '#1e40af', accentColor: '#ffffff', fightingStyle: 'Cyborg', avatarSymbol: 'cog', imageUrl: maximaImg },
   { id: 'mr-karate', name: 'Mr. Karate', title: 'The Masked Master', series: 'Fatal Fury Special', earliestGame: 'Art of Fighting', releaseYear: 1993, country: 'Japan', originalGameDebut: 'Art of Fighting', values: { top: 9, right: 8, bottom: 8, left: 8 }, bio: 'The mysterious master of Kyokugenryu.', quote: 'Prepare yourself.', signatureColor: '#ffffff', accentColor: '#dc2626', fightingStyle: 'Kyokugenryu', avatarSymbol: 'mask', imageUrl: mrKarateImg },
@@ -1083,7 +1083,7 @@ const ALL_CARDS_RAW: Card[] = [
   { id: 'yamazaki', name: 'Ryuji Yamazaki', title: 'The Psychotic Boss', series: "The King of Fighters '97", earliestGame: "The King of Fighters '97", releaseYear: 1997, country: 'Japan', originalGameDebut: 'Fatal Fury 3', values: { top: 8, right: 7, bottom: 8, left: 7 }, bio: 'Violent and unpredictable crime boss.', quote: 'Die, die, die!', signatureColor: '#9f1239', accentColor: '#ffffff', fightingStyle: 'Dirty Brawling', avatarSymbol: 'knife', imageUrl: yamazakiImg },
   { id: 'saisyu', name: 'Saisyu Kusanagi', title: 'The Kusanagi Master', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'Japan', originalGameDebut: "The King of Fighters '94", values: { top: 8, right: 8, bottom: 7, left: 8 }, bio: 'Kyo’s father and master of Kusanagi fire.', quote: 'Ignite!', signatureColor: '#ea580c', accentColor: '#ffffff', fightingStyle: 'Kusanagi', avatarSymbol: 'sun', imageUrl: saisyuImg },
   { id: 'seth', name: 'Seth', title: 'The Shadow Agent', series: 'The King of Fighters 2001', earliestGame: 'The King of Fighters 2000', releaseYear: 2001, country: 'United States', originalGameDebut: 'The King of Fighters 2000', values: { top: 7, right: 7, bottom: 7, left: 7 }, bio: 'An agent with mysterious origins.', quote: 'You’re finished.', signatureColor: '#334155', accentColor: '#ffffff', fightingStyle: 'Combat', avatarSymbol: 'fist', imageUrl: sethImg },
-  { id: 'kensou', name: 'Sie Kensou', title: 'The Psychic Warrior', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'China', originalGameDebut: "The King of Fighters '94", values: { top: 6, right: 7, bottom: 6, left: 7 }, bio: 'Young psychic fighter from China.', quote: 'I can do this!', signatureColor: '#16a34a', accentColor: '#ffffff', fightingStyle: 'Psychic', avatarSymbol: 'fire', imageUrl: kensouImg },
+  { id: 'kensou', name: 'Sie Kensou', title: 'The Psychic Warrior', series: "The King of Fighters '97", earliestGame: "The King of Fighters '94", releaseYear: 1997, country: 'China', originalGameDebut: "The King of Fighters '94", values: { top: 8, right: 3, bottom: 8, left: 3 }, bio: 'Young psychic fighter from China.', quote: 'I can do this!', signatureColor: '#16a34a', accentColor: '#ffffff', fightingStyle: 'Psychic', avatarSymbol: 'fire', imageUrl: kensouImg },
   { id: 'vanessa', name: 'Vanessa', title: 'The Professional Boxer', series: 'The King of Fighters 2001', earliestGame: 'The King of Fighters 2000', releaseYear: 2001, country: 'United States', originalGameDebut: 'The King of Fighters 2000', values: { top: 7, right: 8, bottom: 6, left: 7 }, bio: 'Pro boxer juggling family and spy work.', quote: 'Time for work.', signatureColor: '#2563eb', accentColor: '#ffffff', fightingStyle: 'Boxing', avatarSymbol: 'fist', imageUrl: vanessaImg },
   { id: 'vice', name: 'Vice', title: 'The Brutal Enforcer', series: "The King of Fighters '97", earliestGame: "The King of Fighters '96", releaseYear: 1997, country: 'Unknown', originalGameDebut: "The King of Fighters '96", values: { top: 7, right: 6, bottom: 7, left: 7 }, bio: 'Ruthless enforcer with immense strength.', quote: 'You’re weak.', signatureColor: '#9d174d', accentColor: '#ffffff', fightingStyle: 'Brawling', avatarSymbol: 'skull', imageUrl: viceImg },
   { id: 'yashiro', name: 'Yashiro Nanakase', title: 'The Punk Fighter', series: "The King of Fighters '97", earliestGame: "The King of Fighters '97", releaseYear: 1997, country: 'Japan', originalGameDebut: "The King of Fighters '97", values: { top: 8, right: 7, bottom: 8, left: 7 }, bio: 'Leader of the New Faces Team, connected to Orochi.', quote: 'This is the end.', signatureColor: '#7e22ce', accentColor: '#ffffff', fightingStyle: 'Power', avatarSymbol: 'fist', imageUrl: yashiroImg },
@@ -1115,7 +1115,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1997,
     country: 'Unknown (Ancient Japan)',
     originalGameDebut: "The King of Fighters '97 (1997)",
-    values: { top: 9, right: 9, bottom: 8, left: 8 },
+    values: { top: 4, right: 10, bottom: 2, left: 10 },
     bio: 'The transcendent deity incarnate seeking to cleanse humanity and return the earth to the cosmic void.',
     quote: 'Let all return to nothingness.',
     signatureColor: '#0f172a',
@@ -1189,7 +1189,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 2001,
     country: 'Unknown',
     originalGameDebut: "The King of Fighters '99 (1999)",
-    values: { top: 8, right: 8, bottom: 6, left: 8 },
+    values: { top: 10, right: 3, bottom: 10, left: 4 },
     bio: 'Genetically altered NESTS warrior who shattered his masters’ control to blaze his own destined path.',
     quote: 'Oretachi dake de juubun da. Get out of my way.',
     signatureColor: '#ea580c',
@@ -1243,7 +1243,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 2001,
     country: 'Unknown (NESTS)',
     originalGameDebut: 'The King of Fighters 2001 (2001)',
-    values: { top: 8, right: 7, bottom: 9, left: 6 },
+    values: { top: 1, right: 9, bottom: 1, left: 9 },
     bio: 'Volatile 9,999th Kyo clone whose mutating biomechanical flesh arm erupts in devastating apocalyptic carnage.',
     quote: 'Urusai! URUSAIII! Get away from my head!',
     signatureColor: '#b91c1c',
@@ -1299,7 +1299,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1996,
     country: 'Unknown',
     originalGameDebut: "The King of Fighters '96 (1996)",
-    values: { top: 9, right: 8, bottom: 8, left: 9 },
+    values: { top: 9, right: 5, bottom: 3, left: 9 },
     bio: 'High Priest of the Orochi Hakkesshu who commands cataclysmic gale-force wind blades and cyclones.',
     quote: 'Koko desu ka? Let the howling wind guide you to peace.',
     signatureColor: '#0284c7',
@@ -2114,7 +2114,24 @@ const ALL_CARDS_RAW: Card[] = [
   },
 ];
 
+const MANUAL_STAT_CARD_IDS = new Set([
+  'kensou',
+  'fei-long',
+  'orochi',
+  'guile',
+  'k9999',
+  'vega',
+  'kyo-kusanagi',
+  'goenitz',
+  'heidern',
+  'k-dash',
+]);
+
 export const ALL_CARDS: Card[] = ALL_CARDS_RAW.map(card => {
+  // Preserve exact custom stats for manually balanced fighters
+  if (MANUAL_STAT_CARD_IDS.has(card.id)) {
+    return card;
+  }
   const score = getPopularityScore(card.id, card.name);
   const targetPower = Math.round(4 + (score / 100) * (33 - 4));
   const newValues = distributePower(targetPower, card.values);
