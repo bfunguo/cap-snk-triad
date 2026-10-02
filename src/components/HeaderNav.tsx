@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppScreen } from '../types/game';
 import { audio } from '../utils/audio';
-import { Volume2, VolumeX, Music, Swords, RotateCcw } from 'lucide-react';
+import { Volume2, VolumeX, Music, Swords, RotateCcw, Home } from 'lucide-react';
 
 interface HeaderNavProps {
   currentScreen: AppScreen;
@@ -27,14 +27,15 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate,
     <header className="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Zone 1: Single text element Brand Zone */}
+        {/* Zone 1: Home button */}
         <button
           onClick={() => {
             audio.playCardSelect();
             onNavigate('MENU');
           }}
-          className="font-arcade text-xl md:text-2xl leading-none font-extrabold text-amber-400 tracking-wider hover:text-amber-300 transition-colors uppercase select-none text-left"
+          className="p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 transition-all cursor-pointer"
         >
-          CAPCOM VS SNK TRIAD
+          <Home className="w-5 h-5" />
         </button>
 
         {/* Zone 2: Navigation Links */}
@@ -64,7 +65,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate,
                 : 'text-slate-400 hover:text-slate-100'
             }`}
           >
-            Collection
+            Deck
           </button>
 
           <button
@@ -92,30 +93,30 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate,
                 : 'text-slate-400 hover:text-slate-100'
             }`}
           >
-            Statistics
-          </button>
-
-          {/* Reset Button */}
-          <button
-            onClick={() => {
-              audio.playCardSelect();
-              onOpenReset();
-            }}
-            className="transition-colors py-1 text-slate-400 hover:text-rose-400 flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reset
+            Stats
           </button>
         </nav>
 
         {/* Zone 3: Primary Actions & Audio Controls */}
         <div className="flex items-center gap-2">
-          {/* Background Music Toggle */}
+          {/* Reset Button (Moved before Music) */}
+          <button
+            onClick={() => {
+              audio.playCardSelect();
+              onOpenReset();
+            }}
+            className="p-2 rounded-lg bg-rose-950 text-rose-400 border border-rose-800 hover:text-rose-200 transition-all cursor-pointer flex items-center gap-1.5 text-sm font-semibold"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
+
+          {/* Background Music Toggle (Blue) */}
           <button
             onClick={handleToggleBgm}
             className={`p-2 rounded-lg border transition-all cursor-pointer ${
               isBgmOn
-                ? 'bg-amber-400/20 text-amber-400 border-amber-400/50 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+                ? 'bg-blue-900/20 text-blue-400 border-blue-800 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
                 : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
             }`}
             title={isBgmOn ? 'Arcade Synth BGM Playing (Click to Stop)' : 'Start Arcade Synth BGM'}
@@ -123,25 +124,25 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ currentScreen, onNavigate,
             <Music className="w-4 h-4" />
           </button>
 
-          {/* Master Sound FX Mute */}
+          {/* Master Sound FX Mute (Green outline) */}
           <button
             onClick={handleToggleMute}
-            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-colors cursor-pointer"
+            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500 text-emerald-400 transition-colors cursor-pointer"
             title={isMuted ? 'Audio Muted (Click to Unmute)' : 'Audio Active (Click to Mute)'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
           </button>
 
-          {/* Quick Play CTA */}
+          {/* Quick Play CTA (Yellow) */}
           {currentScreen !== 'MATCH' && currentScreen !== 'SETUP' && (
             <button
               onClick={() => {
                 audio.playCardSelect();
                 onNavigate('SETUP');
               }}
-              className="hidden sm:flex items-center gap-1.5 py-1.5 px-3.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm ml-2"
+              className="hidden sm:flex items-center gap-1.5 p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 transition-all cursor-pointer ml-2 text-sm font-semibold"
             >
-              <Swords className="w-3.5 h-3.5" />
+              <Swords className="w-4 h-4" />
               <span>Fight</span>
             </button>
           )}
