@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-arcade {
+  font-family: 'Teko', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-subheading {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Subtle arcade scanlines effect */
+.arcade-grid-bg {
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 32px 32px, 32px 32px;
+}
+
+@keyframes capture-flash {
+  0% { transform: scale(1); filter: brightness(2.5) contrast(1.5); }
+  50% { transform: scale(1.08); filter: brightness(3) drop-shadow(0 0 16px #f59e0b); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.animate-capture-flash {
+  animation: capture-flash 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes card-place {
+  0% { transform: translateY(-16px) scale(0.92); opacity: 0.3; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.animate-card-place {
+  animation: card-place 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
