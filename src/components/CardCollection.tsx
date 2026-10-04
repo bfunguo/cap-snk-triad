@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { ALL_CARDS, CARD_MAP } from '../data/cards';
 import { Card, Series } from '../types/game';
 import { CardView } from './CardView';
-import { TradeRewardModal } from './TradeRewardModal';
 import { getOwnedCardIds, tradeCards } from '../utils/storage';
 import { audio } from '../utils/audio';
-import { ArrowLeft, Repeat, Search, X, Sparkles, AlertCircle, Info, Plus } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { ArrowLeft, Repeat, Search, X, Sparkles, AlertCircle, Info, Plus, Globe, Swords, Gamepad2, Quote, Check } from 'lucide-react';
+import { getCountryFlag } from './CharacterIndex';
+import { StarBurstFlare } from './StarBurstFlare';
 
 interface CardCollectionProps {
   onBackToMenu: () => void;
@@ -22,12 +22,12 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [showOnlyCollected, setShowOnlyCollected] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [inspectedCard, setInspectedCard] = useState<Card | null>(null);
+  const [isTradeReward, setIsTradeReward] = useState<boolean>(false);
+  const [showFlare, setShowFlare] = useState<boolean>(false);
 
   // Trade Modal State
   const [isTradeModalOpen, setIsTradeModalOpen] = useState<boolean>(false);
   const [tradeSelection, setTradeSelection] = useState<string[]>([]);
-  const [tradeReward, setTradeReward] = useState<Card | null>(null);
-  const [tradedCardsPair, setTradedCardsPair] = useState<[Card, Card] | null>(null);
   const [tradeError, setTradeError] = useState<string | null>(null);
 
   const totalCards = ALL_CARDS.length;
@@ -52,6 +52,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
   const handleCardClick = (card: Card) => {
     audio.playCardSelect();
+    setIsTradeReward(false);
     setInspectedCard(card);
   };
 
@@ -75,15 +76,22 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
     const res = tradeCards(tradeSelection[0], tradeSelection[1]);
     if (res.success && res.rewardedCard) {
-      setTradedCardsPair([card1, card2]);
-      setTradeReward(res.rewardedCard);
-      // Close the selection modal so the animated TradeRewardModal takes center stage!
+      // Close the selection modal
       setIsTradeModalOpen(false);
       setTradeSelection([]);
 
       const updated = getOwnedCardIds();
       setOwnedIds(updated);
       onRefreshOwned();
+
+      // Show the new card's profile Dossier Modal immediately!
+      setIsTradeReward(true);
+      setInspectedCard(res.rewardedCard);
+      setShowFlare(true);
+
+      // Play victory fanfare audio and trigger star burst / lens flare
+      audio.playCardReveal();
+      audio.playVictory();
     } else {
       setTradeError(res.error || 'Failed to complete trade.');
     }
@@ -91,19 +99,6 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
   const closeTradeModal = () => {
     setIsTradeModalOpen(false);
-    setTradeSelection([]);
-    setTradeError(null);
-  };
-
-  const closeTradeRewardModal = () => {
-    setTradeReward(null);
-    setTradedCardsPair(null);
-  };
-
-  const handleTradeAgain = () => {
-    setTradeReward(null);
-    setTradedCardsPair(null);
-    setIsTradeModalOpen(true);
     setTradeSelection([]);
     setTradeError(null);
   };
@@ -270,54 +265,148 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         })}
       </div>
 
-      {/* Card Inspector Modal */}
+      {/* Card Inspector Modal (Presented as in Character Index) */}
       {inspectedCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4">
-          <div className="bg-slate-900 border-2 border-slate-700 rounded-2xl p-6 max-w-md w-full relative shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative max-w-xl w-full bg-slate-900 border-2 border-slate-700 rounded-3xl p-6 shadow-2xl overflow-hidden flex flex-col md:flex-row gap-6 items-center max-h-[92vh] overflow-y-auto">
+            {/* Ambient Background Aura */}
+            <div
+              className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-3xl opacity-20 pointer-events-none"
+              style={{ backgroundColor: inspectedCard.signatureColor }}
+            />
+
+            {/* Close Button */}
             <button
-              onClick={() => setInspectedCard(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100 p-1 rounded-lg bg-slate-800"
+              onClick={() => {
+                audio.playCardSelect();
+                setInspectedCard(null);
+                setIsTradeReward(false);
+                setShowFlare(false);
+              }}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors z-20 cursor-pointer"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex flex-col items-center">
-              <CardView card={inspectedCard} size="lg" />
+            {/* Modal Left Side: Full Card View */}
+            <div className="shrink-0 flex flex-col items-center">
+              <div className="relative drop-shadow-xl hover:scale-105 transition-transform duration-300">
+                <CardView card={inspectedCard} size="md" />
+              </div>
+              {isTradeReward && (
+                <span className="mt-2 text-[10px] text-amber-400 font-mono tracking-wider uppercase font-bold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Newly Acquired</span>
+                </span>
+              )}
             </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="text-center">
-                <h2 className="font-arcade text-3xl font-bold text-slate-100">
-                  {inspectedCard.name}
-                </h2>
-                <p className="text-xs text-amber-400 font-semibold">{inspectedCard.title}</p>
-                <p className="text-xs text-slate-400 italic mt-1">"{inspectedCard.quote}"</p>
+            {/* Modal Right Side: Complete Profile Dossier */}
+            <div className="flex-1 min-w-0 space-y-3 z-10 text-left w-full">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider text-slate-300 border border-slate-700 bg-slate-950/80">
+                  {inspectedCard.series}
+                </span>
+                <span className="text-xs text-amber-400 font-mono font-bold">
+                  PWR {inspectedCard.values.top + inspectedCard.values.right + inspectedCard.values.bottom + inspectedCard.values.left}
+                </span>
+                {isTradeReward && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-emerald-400 border border-emerald-500/40 bg-emerald-500/10 flex items-center gap-1">
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span>Trade Reward</span>
+                  </span>
+                )}
               </div>
 
-              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-1.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Origin Game:</span>
-                  <span className="text-slate-200 font-medium">{inspectedCard.earliestGame}</span>
+              <div>
+                <h2 className="font-arcade text-3xl font-black text-amber-400 leading-tight">
+                  {inspectedCard.name}
+                </h2>
+                <p className="text-xs text-slate-400 font-medium">
+                  {inspectedCard.title}
+                </p>
+              </div>
+
+              {/* Core Details Grid */}
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-sky-400" />
+                    Country of Origin:
+                  </span>
+                  <span className="font-semibold text-slate-200 flex items-center gap-1">
+                    <span>{getCountryFlag(inspectedCard.country)}</span>
+                    <span>{inspectedCard.country}</span>
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Series Category:</span>
-                  <span className="text-slate-200 font-medium">{inspectedCard.series}</span>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Swords className="w-3.5 h-3.5 text-amber-400" />
+                    Fighting Style:
+                  </span>
+                  <span className="font-semibold text-slate-200">
+                    {inspectedCard.fightingStyle}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Fighting Style:</span>
-                  <span className="text-slate-200 font-medium">{inspectedCard.fightingStyle}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Directional Power:</span>
-                  <span className="text-amber-400 font-mono font-bold">
-                    ▲ {inspectedCard.values.top} · ▶ {inspectedCard.values.right} · ▼ {inspectedCard.values.bottom} · ◀ {inspectedCard.values.left}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 flex items-center gap-1.5">
+                    <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
+                    Original Debut:
+                  </span>
+                  <span className="font-semibold text-slate-200">
+                    {inspectedCard.originalGameDebut || inspectedCard.earliestGame}
                   </span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              {/* Bio & Quote */}
+              <p className="text-xs text-slate-300 leading-relaxed">
                 {inspectedCard.bio}
               </p>
+
+              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs italic text-amber-200/90 flex items-start gap-2">
+                <Quote className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>"{inspectedCard.quote}"</span>
+              </div>
+
+              {/* Action Buttons for Trade Reward */}
+              {isTradeReward && (
+                <div className="pt-2 flex flex-col sm:flex-row items-center gap-2">
+                  <button
+                    onClick={() => {
+                      audio.playCardSelect();
+                      setInspectedCard(null);
+                      setIsTradeReward(false);
+                      setShowFlare(false);
+                    }}
+                    className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-arcade text-lg font-bold tracking-wider uppercase cursor-pointer transition-all shadow-[0_0_16px_rgba(245,158,11,0.35)] flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                    <span>COLLECT & RETURN</span>
+                  </button>
+
+                  {ownedIds.length >= 2 && (
+                    <button
+                      onClick={() => {
+                        audio.playCardSelect();
+                        setInspectedCard(null);
+                        setIsTradeReward(false);
+                        setShowFlare(false);
+                        setIsTradeModalOpen(true);
+                        setTradeSelection([]);
+                        setTradeError(null);
+                      }}
+                      className="w-full sm:w-auto py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs uppercase tracking-wider cursor-pointer transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Repeat className="w-3.5 h-3.5 text-amber-400" />
+                      <span>TRADE AGAIN</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -493,15 +582,9 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
         </div>
       )}
 
-      {/* Animated New Card Reveal & Pop-up Modal */}
-      {tradeReward && (
-        <TradeRewardModal
-          rewardCard={tradeReward}
-          tradedCards={tradedCardsPair}
-          onClose={closeTradeRewardModal}
-          onTradeAgain={handleTradeAgain}
-          canTradeAgain={ownedIds.length >= 8}
-        />
+      {/* Star Burst / Lens Flare Animation */}
+      {showFlare && (
+        <StarBurstFlare onComplete={() => setShowFlare(false)} />
       )}
     </div>
   );

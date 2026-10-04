@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppScreen } from '../types/game';
-import { audio } from '../utils/audio';
-import { Volume2, VolumeX, Music, Swords, RotateCcw, Home } from 'lucide-react';
+import { audio, BGMTrackMeta } from '../utils/audio';
+import { Volume2, VolumeX, Music, RotateCcw, Home, SkipForward } from 'lucide-react';
 
-export const CheeseIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+export const CheeseIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
   <svg
     viewBox="0 0 24 24"
     fill="none"
@@ -38,6 +38,15 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 }) => {
   const [isMuted, setIsMuted] = React.useState<boolean>(() => audio.getMuted());
   const [isBgmOn, setIsBgmOn] = React.useState<boolean>(() => audio.isBGMPlaying());
+  const [currentTrack, setCurrentTrack] = useState<BGMTrackMeta>(() => audio.getCurrentTrack());
+
+  useEffect(() => {
+    const unsubscribe = audio.onTrackChange((track) => {
+      setCurrentTrack(track);
+      setIsBgmOn(audio.isBGMPlaying());
+    });
+    return unsubscribe;
+  }, []);
 
   const handleToggleMute = () => {
     const next = audio.toggleMute();
@@ -49,19 +58,28 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     setIsBgmOn(next);
   };
 
+  const handleNextTrack = () => {
+    audio.playCardSelect();
+    const next = audio.nextTrack();
+    setCurrentTrack(next);
+    setIsBgmOn(true);
+  };
+
   return (
     <header className="w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Zone 1: Single text element Brand Zone */}
-        {/* Zone 1: Home button */}
+        {/* Zone 1: Home button (30% smaller) */}
         <button
           onClick={() => {
             audio.playCardSelect();
             onNavigate('MENU');
           }}
-          className="p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 transition-all cursor-pointer"
+          className="p-1.5 rounded-md bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 transition-all cursor-pointer flex items-center justify-center"
+          title="Return to Main Menu (Home)"
+          aria-label="Home"
         >
-          <Home className="w-5 h-5" />
+          <Home className="w-3.5 h-3.5" />
         </button>
 
         {/* Zone 2: Navigation Links */}
@@ -124,66 +142,70 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         </nav>
 
         {/* Zone 3: Primary Actions & Audio Controls */}
-        <div className="flex items-center gap-2">
-          {/* Reset Button (Moved before Music) */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Reset Button (30% smaller) */}
           <button
             onClick={() => {
               audio.playCardSelect();
               onOpenReset();
             }}
-            className="p-2 rounded-lg bg-rose-950 text-rose-400 border border-rose-800 hover:text-rose-200 transition-all cursor-pointer flex items-center gap-1.5 text-sm font-semibold"
+            className="px-2 py-1 rounded-md bg-rose-950 text-rose-400 border border-rose-800 hover:text-rose-200 transition-all cursor-pointer flex items-center gap-1 text-xs font-semibold"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3 h-3" />
             Reset
           </button>
 
-          {/* Background Music Toggle (Blue) */}
-          <button
-            onClick={handleToggleBgm}
-            className={`p-2 rounded-lg border transition-all cursor-pointer ${
-              isBgmOn
-                ? 'bg-blue-900/20 text-blue-400 border-blue-800 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-            }`}
-            title={isBgmOn ? 'Arcade Synth BGM Playing (Click to Stop)' : 'Start Arcade Synth BGM'}
-          >
-            <Music className="w-4 h-4" />
-          </button>
+          {/* Background Music Controls (Toggle & Skip Next) */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleToggleBgm}
+              className={`p-1.5 rounded-md border transition-all cursor-pointer ${
+                isBgmOn
+                  ? 'bg-blue-900/20 text-blue-400 border-blue-800 shadow-[0_0_8px_rgba(59,130,246,0.3)]'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              }`}
+              title={
+                isBgmOn
+                  ? `Now Playing: ${currentTrack?.title} (${currentTrack?.game}) • Click to Stop`
+                  : 'Start Arcade Synth BGM'
+              }
+              aria-label={isBgmOn ? `Music playing: ${currentTrack?.title}` : 'Play music'}
+            >
+              <Music className="w-3.5 h-3.5" />
+            </button>
 
-          {/* Master Sound FX Mute (Green outline) */}
+            {isBgmOn && (
+              <button
+                onClick={handleNextTrack}
+                className="p-1.5 rounded-md bg-blue-950/60 text-blue-300 border border-blue-800/80 hover:bg-blue-900/80 hover:text-blue-100 transition-all cursor-pointer shadow-sm animate-in fade-in"
+                title={`Next Track in Rotation (${audio.getRemainingInRotationCount()} left in cycle before repeating)`}
+                aria-label="Skip to next song in rotation"
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Master Sound FX Mute (30% smaller) */}
           <button
             onClick={handleToggleMute}
-            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500 text-emerald-400 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md bg-slate-900 hover:bg-slate-800 border border-emerald-500 text-emerald-400 transition-colors cursor-pointer"
             title={isMuted ? 'Audio Muted (Click to Unmute)' : 'Audio Active (Click to Mute)'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
           </button>
 
-          {/* Quick Play CTA (Yellow) */}
-          {currentScreen !== 'MATCH' && currentScreen !== 'SETUP' && (
-            <button
-              onClick={() => {
-                audio.playCardSelect();
-                onNavigate('SETUP');
-              }}
-              className="hidden sm:flex items-center gap-1.5 p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 transition-all cursor-pointer ml-2 text-sm font-semibold"
-            >
-              <Swords className="w-4 h-4" />
-              <span>Fight</span>
-            </button>
-          )}
-
-          {/* Cheese Unlock Button */}
+          {/* Cheese Unlock Button (30% smaller) */}
           <button
             onClick={() => {
               audio.playCardSelect();
               onUnlockAllCards?.();
             }}
-            className="p-2 rounded-lg bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 hover:bg-amber-900/60 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+            className="p-1.5 rounded-md bg-amber-950 text-amber-400 border border-amber-800 hover:text-amber-200 hover:bg-amber-900/60 transition-all cursor-pointer flex items-center justify-center shadow-sm"
             title="Cheese Code: Unlock all characters in deck & available for play!"
             aria-label="Unlock all characters in deck"
           >
-            <CheeseIcon className="w-4 h-4" />
+            <CheeseIcon className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

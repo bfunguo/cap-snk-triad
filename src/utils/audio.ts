@@ -357,13 +357,94 @@ class AudioManager {
 
   // --- BACKGROUND ARCADE CHIPTUNE MUSIC ---
 
-  private currentTheme: 'menu' | 'sf2_guile' | 'sf2_ryu' | 'sf2_ken' | 'sf2_balrog' = 'menu';
+  private currentTheme: BGMThemeId = 'menu';
+  private rotationQueue: BGMThemeId[] = [];
+  private lastPlayedTheme: BGMThemeId | null = null;
+  private trackChangeListeners: Set<(track: BGMTrackMeta) => void> = new Set();
 
-  public startBGM(theme: 'menu' | 'sf2_guile' | 'sf2_ryu' | 'sf2_ken' | 'sf2_balrog' = 'menu') {
-    // If already playing correct theme, keep going
-    if (this.bgmPlaying && this.currentTheme === theme) return;
+  public getCurrentTrack(): BGMTrackMeta {
+    return BGM_TRACKS[this.currentTheme] || BGM_TRACKS['menu'];
+  }
 
-    // Stop any active BGM timer first
+  public getAllTracks(): BGMTrackMeta[] {
+    return ALL_BGM_THEMES.map(id => BGM_TRACKS[id]);
+  }
+
+  public getRemainingInRotationCount(): number {
+    return this.rotationQueue.length;
+  }
+
+  public onTrackChange(listener: (track: BGMTrackMeta) => void): () => void {
+    this.trackChangeListeners.add(listener);
+    return () => {
+      this.trackChangeListeners.delete(listener);
+    };
+  }
+
+  private notifyTrackChange(track: BGMTrackMeta) {
+    this.trackChangeListeners.forEach(listener => {
+      try {
+        listener(track);
+      } catch (err) {
+        console.error('Error in track change listener', err);
+      }
+    });
+  }
+
+  /**
+   * Generates a freshly shuffled rotation queue containing all 10 tracks.
+   * Guarantees no track will repeat until all 10 tracks have been played.
+   * Also ensures the first track in a new rotation does not immediately duplicate the last played track.
+   */
+  private generateRotationQueue(excludeFirst?: BGMThemeId | null): BGMThemeId[] {
+    const list = [...ALL_BGM_THEMES];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    if (excludeFirst && list.length > 1 && list[0] === excludeFirst) {
+      const swapIdx = 1 + Math.floor(Math.random() * (list.length - 1));
+      [list[0], list[swapIdx]] = [list[swapIdx], list[0]];
+    }
+    return list;
+  }
+
+  /**
+   * Plays the next song in the non-repeating rotation.
+   */
+  public playNextSongInRotation(): BGMTrackMeta {
+    if (this.rotationQueue.length === 0) {
+      this.rotationQueue = this.generateRotationQueue(this.lastPlayedTheme);
+    }
+    const nextThemeId = this.rotationQueue.shift()!;
+    this.lastPlayedTheme = nextThemeId;
+    this.startBGM(nextThemeId, false);
+    return BGM_TRACKS[nextThemeId];
+  }
+
+  public nextTrack(): BGMTrackMeta {
+    return this.playNextSongInRotation();
+  }
+
+  public startBGM(theme?: BGMThemeId, isManualSelect: boolean = true) {
+    // If no specific theme requested, pick next in the non-repeating rotation
+    if (!theme) {
+      this.playNextSongInRotation();
+      return;
+    }
+
+    if (isManualSelect) {
+      // Consume from rotation queue so it won't repeat before the cycle completes
+      this.rotationQueue = this.rotationQueue.filter(id => id !== theme);
+      this.lastPlayedTheme = theme;
+    }
+
+    // If already playing this theme actively, don't restart it
+    if (this.bgmPlaying && this.currentTheme === theme && this.bgmIntervalId !== null) {
+      return;
+    }
+
+    // Stop active BGM timer
     if (this.bgmIntervalId !== null) {
       clearInterval(this.bgmIntervalId);
       this.bgmIntervalId = null;
@@ -373,91 +454,24 @@ class AudioManager {
     this.bgmPlaying = true;
     this.currentTheme = theme;
 
-    let bassline: number[] = [];
-    let melody: number[] = [];
-    let intervalMs = 130;
-
-    if (theme === 'sf2_guile') {
-      // Guile's Theme (SF2) - High driving speed, key of A minor chiptune
-      bassline = [
-        110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, // A2 (Bars 1-2)
-        87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31,         // F2 (Bars 3-4)
-        130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, // C3 (Bars 5-6)
-        98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00          // G2 (Bars 7-8)
-      ];
-
-      melody = [
-        659.25, 659.25, 587.33, 659.25, 0, 523.25, 587.33, 523.25,      // E5 E5 D5 E5 . C5 D5 C5
-        440.00, 440.00, 0, 523.25, 587.33, 659.25, 783.99, 880.00,      // A4 A4 . C5 D5 E5 G5 A5
-        659.25, 659.25, 587.33, 659.25, 0, 523.25, 587.33, 523.25,      // E5 E5 D5 E5 . C5 D5 C5
-        392.00, 392.00, 0, 493.88, 523.25, 587.33, 698.46, 783.99       // G4 G4 . B4 C5 D5 F5 G5
-      ];
-      intervalMs = 125;
-    } else if (theme === 'sf2_ryu') {
-      // Ryu's Theme (SF2) - Bold and epic, key of A minor chiptune
-      bassline = [
-        110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, // A2 (Bars 1-2)
-        130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, // C3 (Bars 3-4)
-        98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,         // G2 (Bars 5-6)
-        87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31          // F2 (Bars 7-8)
-      ];
-
-      melody = [
-        440.00, 0, 440.00, 493.88, 523.25, 0, 523.25, 587.33,           // A4 . A4 B4 C5 . C5 D5
-        659.25, 0, 659.25, 587.33, 523.25, 493.88, 523.25, 440.00,      // E5 . E5 D5 C5 B4 C5 A4
-        659.25, 0, 659.25, 587.33, 523.25, 0, 523.25, 493.88,           // E5 . E5 D5 C5 . C5 B4
-        440.00, 0, 440.00, 523.25, 493.88, 0, 440.00, 392.00            // A4 . A4 C5 B4 . A4 G4
-      ];
-      intervalMs = 135;
-    } else if (theme === 'sf2_ken') {
-      // Ken's Theme (SF2) - High-energy rock style, key of A minor chiptune
-      bassline = [
-        87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31,         // F2 (Bars 1-2)
-        98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,         // G2 (Bars 3-4)
-        110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, // A2 (Bars 5-6)
-        82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41          // E2 (Bars 7-8)
-      ];
-
-      melody = [
-        440.00, 523.25, 659.25, 880.00, 783.99, 659.25, 587.33, 659.25, // A4 C5 E5 A5 G5 E5 D5 E5
-        440.00, 523.25, 659.25, 880.00, 783.99, 659.25, 783.99, 880.00, // A4 C5 E5 A5 G5 E5 G5 A5
-        523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 523.25, // C5 B4 A4 B4 C5 D5 E5 C5
-        587.33, 523.25, 493.88, 523.25, 440.00, 392.00, 440.00, 0       // D5 C5 B4 C5 A4 G4 A4 .
-      ];
-      intervalMs = 120; // Driving tempo
-    } else if (theme === 'sf2_balrog') {
-      // Balrog's Theme (SF2 Las Vegas stage) - Bouncy casino beat
-      bassline = [
-        123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, // B2
-        82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41,         // E2
-        123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, // B2
-        98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00          // G2
-      ];
-
-      melody = [
-        659.25, 0, 622.25, 659.25, 739.99, 0, 659.25, 587.33,           // E5 . D#5 E5 F#5 . E5 D5
-        493.88, 0, 493.88, 523.25, 587.33, 0, 523.25, 493.88,           // B4 . B4 C5 D5 . C5 B4
-        659.25, 0, 622.25, 659.25, 739.99, 0, 659.25, 587.33,           // E5 . D#5 E5 F#5 . E5 D5
-        783.99, 783.99, 0, 739.99, 659.25, 0, 587.33, 493.88            // G5 G5 . F#5 E5 . D5 B4
-      ];
-      intervalMs = 130;
-    } else {
-      // Default Menu Theme (16-step bassline & lead groove)
-      bassline = [110, 110, 130.81, 110, 146.83, 130.81, 110, 98, 110, 110, 164.81, 146.83, 130.81, 110, 123.47, 98];
-      melody = [220, 0, 261.63, 0, 293.66, 329.63, 261.63, 0, 329.63, 0, 392, 349.23, 293.66, 0, 261.63, 220];
-      intervalMs = 130;
-    }
+    const track = BGM_TRACKS[theme] || BGM_TRACKS['menu'];
+    this.notifyTrackChange(track);
 
     let step = 0;
+    const maxSteps = (track.melody.length || 32) * (track.totalCycles || 8);
 
     const playStep = () => {
       if (!this.bgmPlaying || !this.ctx || !this.bgmGainNode || this.isMuted) return;
 
-      const now = this.ctx.currentTime;
-      const bassFreq = bassline[step % bassline.length];
-      const leadFreq = melody[step % melody.length];
+      // When this song reaches the end of its duration, seamlessly play the next song in rotation
+      if (step >= maxSteps) {
+        this.playNextSongInRotation();
+        return;
+      }
 
-      const isSF2 = theme.startsWith('sf2_');
+      const now = this.ctx.currentTime;
+      const bassFreq = track.bassline[step % track.bassline.length];
+      const leadFreq = track.melody[step % track.melody.length];
 
       // Bass note
       if (bassFreq > 0) {
@@ -466,7 +480,7 @@ class AudioManager {
         bassOsc.type = 'sawtooth';
         bassOsc.frequency.setValueAtTime(bassFreq, now);
 
-        bassGain.gain.setValueAtTime(isSF2 ? 0.14 : 0.18, now);
+        bassGain.gain.setValueAtTime(0.14, now);
         bassGain.gain.exponentialRampToValueAtTime(0.01, now + 0.11);
 
         bassOsc.connect(bassGain);
@@ -475,14 +489,14 @@ class AudioManager {
         bassOsc.stop(now + 0.12);
       }
 
-      // Lead note
+      // Lead melody note
       if (leadFreq > 0) {
         const leadOsc = this.ctx.createOscillator();
         const leadGain = this.ctx.createGain();
-        leadOsc.type = 'triangle';
+        leadOsc.type = theme === 'sf3_jazzy_nyc' ? 'sine' : 'triangle';
         leadOsc.frequency.setValueAtTime(leadFreq, now);
 
-        leadGain.gain.setValueAtTime(isSF2 ? 0.08 : 0.12, now);
+        leadGain.gain.setValueAtTime(0.10, now);
         leadGain.gain.exponentialRampToValueAtTime(0.01, now + 0.13);
 
         leadOsc.connect(leadGain);
@@ -491,7 +505,7 @@ class AudioManager {
         leadOsc.stop(now + 0.14);
       }
 
-      // Hi-hat / drum hit on quarter steps
+      // Kick drum on quarter beat (steps 0, 4, 8, 12, etc.)
       if (step % 4 === 0) {
         const kickOsc = this.ctx.createOscillator();
         const kickGain = this.ctx.createGain();
@@ -506,12 +520,27 @@ class AudioManager {
         kickGain.connect(this.bgmGainNode);
         kickOsc.start(now);
         kickOsc.stop(now + 0.09);
+      } else if (step % 4 === 2) {
+        // Snare / high accent on backbeat
+        const snareOsc = this.ctx.createOscillator();
+        const snareGain = this.ctx.createGain();
+        snareOsc.type = 'triangle';
+        snareOsc.frequency.setValueAtTime(320, now);
+        snareOsc.frequency.exponentialRampToValueAtTime(110, now + 0.05);
+
+        snareGain.gain.setValueAtTime(0.07, now);
+        snareGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        snareOsc.connect(snareGain);
+        snareGain.connect(this.bgmGainNode);
+        snareOsc.start(now);
+        snareOsc.stop(now + 0.05);
       }
 
       step++;
     };
 
-    this.bgmIntervalId = window.setInterval(playStep, intervalMs);
+    this.bgmIntervalId = window.setInterval(playStep, track.intervalMs);
   }
 
   public stopBGM() {
@@ -531,10 +560,258 @@ class AudioManager {
       this.stopBGM();
       return false;
     } else {
-      this.startBGM(this.currentTheme);
+      this.startBGM(this.currentTheme, false);
       return true;
     }
   }
 }
+
+export type BGMThemeId =
+  | 'menu'
+  | 'sf2_guile'
+  | 'sf2_ryu'
+  | 'sf2_ken'
+  | 'sf2_balrog'
+  | 'sf2_chunli'
+  | 'sf2_cammy'
+  | 'sf2_vega'
+  | 'sf2_sagat'
+  | 'sf3_jazzy_nyc';
+
+export interface BGMTrackMeta {
+  id: BGMThemeId;
+  title: string;
+  game: string;
+  stage: string;
+  intervalMs: number;
+  totalCycles: number;
+  bassline: number[];
+  melody: number[];
+}
+
+export const ALL_BGM_THEMES: BGMThemeId[] = [
+  'menu',
+  'sf2_guile',
+  'sf2_ryu',
+  'sf2_ken',
+  'sf2_balrog',
+  'sf2_chunli',
+  'sf2_cammy',
+  'sf2_vega',
+  'sf2_sagat',
+  'sf3_jazzy_nyc',
+];
+
+export const BGM_TRACKS: Record<BGMThemeId, BGMTrackMeta> = {
+  // 1. Classic Arcade Menu Theme
+  menu: {
+    id: 'menu',
+    title: 'Arcade Menu Theme',
+    game: 'Card Fighter Clash',
+    stage: 'Title & System Menu',
+    intervalMs: 130,
+    totalCycles: 16,
+    bassline: [110, 110, 130.81, 110, 146.83, 130.81, 110, 98, 110, 110, 164.81, 146.83, 130.81, 110, 123.47, 98],
+    melody: [220, 0, 261.63, 0, 293.66, 329.63, 261.63, 0, 329.63, 0, 392, 349.23, 293.66, 0, 261.63, 220],
+  },
+
+  // 2. Guile's Theme (SF2)
+  sf2_guile: {
+    id: 'sf2_guile',
+    title: "Guile's Theme",
+    game: 'Street Fighter II',
+    stage: 'USAF Air Base',
+    intervalMs: 125,
+    totalCycles: 8,
+    bassline: [
+      110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00,
+      87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31,
+      130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81,
+      98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,
+    ],
+    melody: [
+      659.25, 659.25, 587.33, 659.25, 0, 523.25, 587.33, 523.25,
+      440.00, 440.00, 0, 523.25, 587.33, 659.25, 783.99, 880.00,
+      659.25, 659.25, 587.33, 659.25, 0, 523.25, 587.33, 523.25,
+      392.00, 392.00, 0, 493.88, 523.25, 587.33, 698.46, 783.99,
+    ],
+  },
+
+  // 3. Ryu's Theme (SF2)
+  sf2_ryu: {
+    id: 'sf2_ryu',
+    title: "Ryu's Theme",
+    game: 'Street Fighter II',
+    stage: 'Suzaku Castle, Japan',
+    intervalMs: 135,
+    totalCycles: 8,
+    bassline: [
+      110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00,
+      130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81, 130.81,
+      98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,
+      87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31,
+    ],
+    melody: [
+      440.00, 0, 440.00, 493.88, 523.25, 0, 523.25, 587.33,
+      659.25, 0, 659.25, 587.33, 523.25, 493.88, 523.25, 440.00,
+      659.25, 0, 659.25, 587.33, 523.25, 0, 523.25, 493.88,
+      440.00, 0, 440.00, 523.25, 493.88, 0, 440.00, 392.00,
+    ],
+  },
+
+  // 4. Ken's Theme (SF2)
+  sf2_ken: {
+    id: 'sf2_ken',
+    title: "Ken's Theme",
+    game: 'Street Fighter II',
+    stage: 'Battle Harbor, USA',
+    intervalMs: 120,
+    totalCycles: 8,
+    bassline: [
+      87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31, 87.31,
+      98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,
+      110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00, 110.00,
+      82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41,
+    ],
+    melody: [
+      440.00, 523.25, 659.25, 880.00, 783.99, 659.25, 587.33, 659.25,
+      440.00, 523.25, 659.25, 880.00, 783.99, 659.25, 783.99, 880.00,
+      523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 523.25,
+      587.33, 523.25, 493.88, 523.25, 440.00, 392.00, 440.00, 0,
+    ],
+  },
+
+  // 5. Balrog's Theme (SF2)
+  sf2_balrog: {
+    id: 'sf2_balrog',
+    title: "Balrog's Theme",
+    game: 'Street Fighter II',
+    stage: 'Las Vegas Strip, USA',
+    intervalMs: 130,
+    totalCycles: 8,
+    bassline: [
+      123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47,
+      82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41, 82.41,
+      123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47, 123.47,
+      98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00, 98.00,
+    ],
+    melody: [
+      659.25, 0, 622.25, 659.25, 739.99, 0, 659.25, 587.33,
+      493.88, 0, 493.88, 523.25, 587.33, 0, 523.25, 493.88,
+      659.25, 0, 622.25, 659.25, 739.99, 0, 659.25, 587.33,
+      783.99, 783.99, 0, 739.99, 659.25, 0, 587.33, 493.88,
+    ],
+  },
+
+  // 6. NEW: Chun-Li's Theme (SF2)
+  sf2_chunli: {
+    id: 'sf2_chunli',
+    title: "Chun-Li's Theme",
+    game: 'Street Fighter II',
+    stage: 'Peace Road, China',
+    intervalMs: 120,
+    totalCycles: 8,
+    bassline: [
+      87.31, 87.31, 130.81, 87.31, 103.83, 87.31, 130.81, 77.78,
+      87.31, 87.31, 130.81, 87.31, 103.83, 116.54, 130.81, 155.56,
+      138.59, 138.59, 103.83, 138.59, 155.56, 155.56, 116.54, 155.56,
+      87.31, 87.31, 130.81, 87.31, 87.31, 130.81, 174.61, 0,
+    ],
+    melody: [
+      523.25, 0, 698.46, 783.99, 830.61, 783.99, 698.46, 622.25,
+      698.46, 0, 523.25, 622.25, 698.46, 783.99, 830.61, 932.33,
+      1046.50, 0, 932.33, 830.61, 783.99, 698.46, 622.25, 523.25,
+      622.25, 698.46, 0, 783.99, 830.61, 783.99, 698.46, 0,
+    ],
+  },
+
+  // 7. NEW: Cammy's Theme (Super Street Fighter II)
+  sf2_cammy: {
+    id: 'sf2_cammy',
+    title: "Cammy's Theme",
+    game: 'Super Street Fighter II',
+    stage: 'Old Temple, England',
+    intervalMs: 115,
+    totalCycles: 8,
+    bassline: [
+      73.42, 73.42, 73.42, 73.42, 87.31, 87.31, 98.00, 98.00,
+      110.00, 110.00, 98.00, 98.00, 87.31, 87.31, 73.42, 73.42,
+      73.42, 73.42, 73.42, 73.42, 87.31, 87.31, 98.00, 98.00,
+      110.00, 110.00, 110.00, 110.00, 130.81, 130.81, 146.83, 146.83,
+    ],
+    melody: [
+      587.33, 0, 587.33, 659.25, 698.46, 0, 880.00, 783.99,
+      698.46, 659.25, 587.33, 659.25, 698.46, 0, 587.33, 0,
+      587.33, 0, 587.33, 659.25, 698.46, 0, 880.00, 1046.50,
+      880.00, 0, 783.99, 698.46, 659.25, 0, 587.33, 0,
+    ],
+  },
+
+  // 8. NEW: Vega's Theme (SF2)
+  sf2_vega: {
+    id: 'sf2_vega',
+    title: "Vega's Theme",
+    game: 'Street Fighter II',
+    stage: 'Mesón de la Taberna, Spain',
+    intervalMs: 125,
+    totalCycles: 8,
+    bassline: [
+      82.41, 82.41, 82.41, 82.41, 87.31, 87.31, 87.31, 87.31,
+      98.00, 98.00, 98.00, 98.00, 87.31, 87.31, 82.41, 82.41,
+      82.41, 82.41, 82.41, 82.41, 87.31, 87.31, 87.31, 87.31,
+      123.47, 123.47, 123.47, 123.47, 82.41, 82.41, 82.41, 82.41,
+    ],
+    melody: [
+      659.25, 0, 698.46, 659.25, 622.25, 659.25, 783.99, 698.46,
+      659.25, 0, 587.33, 523.25, 493.88, 0, 523.25, 493.88,
+      440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00,
+      783.99, 698.46, 659.25, 587.33, 493.88, 0, 659.25, 0,
+    ],
+  },
+
+  // 9. NEW: Sagat's Theme (SF2)
+  sf2_sagat: {
+    id: 'sf2_sagat',
+    title: "Sagat's Theme",
+    game: 'Street Fighter II',
+    stage: 'Ayutthaya Ruins, Thailand',
+    intervalMs: 130,
+    totalCycles: 8,
+    bassline: [
+      65.41, 65.41, 65.41, 65.41, 65.41, 65.41, 77.78, 87.31,
+      98.00, 98.00, 98.00, 98.00, 87.31, 87.31, 77.78, 65.41,
+      65.41, 65.41, 65.41, 65.41, 65.41, 65.41, 77.78, 87.31,
+      98.00, 98.00, 116.54, 98.00, 87.31, 77.78, 65.41, 65.41,
+    ],
+    melody: [
+      523.25, 0, 523.25, 622.25, 783.99, 0, 783.99, 698.46,
+      622.25, 0, 523.25, 0, 587.33, 622.25, 587.33, 0,
+      523.25, 0, 523.25, 622.25, 783.99, 0, 932.33, 783.99,
+      698.46, 783.99, 622.25, 0, 587.33, 0, 523.25, 0,
+    ],
+  },
+
+  // 10. NEW: Jazzy NYC '99 (SF3: 3rd Strike)
+  sf3_jazzy_nyc: {
+    id: 'sf3_jazzy_nyc',
+    title: "Jazzy NYC '99",
+    game: 'Street Fighter III: 3rd Strike',
+    stage: 'Underground Subway / Rooftop',
+    intervalMs: 125,
+    totalCycles: 8,
+    bassline: [
+      77.78, 0, 77.78, 92.50, 103.83, 0, 116.54, 103.83,
+      77.78, 77.78, 0, 69.30, 77.78, 0, 92.50, 103.83,
+      116.54, 0, 116.54, 103.83, 92.50, 77.78, 0, 69.30,
+      77.78, 0, 77.78, 92.50, 103.83, 0, 116.54, 0,
+    ],
+    melody: [
+      311.13, 0, 369.99, 415.30, 466.16, 0, 466.16, 415.30,
+      369.99, 0, 311.13, 0, 277.18, 311.13, 0, 0,
+      466.16, 0, 554.37, 466.16, 415.30, 0, 369.99, 415.30,
+      466.16, 0, 415.30, 369.99, 311.13, 0, 311.13, 0,
+    ],
+  },
+};
 
 export const audio = new AudioManager();

@@ -123,27 +123,36 @@ export function awardRandomUnownedCard(): Card | null {
 }
 
 /**
- * Trade 2 owned cards for 1 unowned card.
+ * Trade 2 owned cards for 1 unowned (or bonus) fighter card.
  */
 export function tradeCards(cardId1: string, cardId2: string): { success: boolean; rewardedCard: Card | null; error?: string } {
-  const unowned = getUnownedCards();
-  if (unowned.length === 0) {
-    return { success: false, rewardedCard: null, error: 'You have already collected all 38 cards!' };
-  }
-
   const owned = getOwnedCardIds();
   if (!owned.includes(cardId1) || !owned.includes(cardId2) || cardId1 === cardId2) {
     return { success: false, rewardedCard: null, error: 'Invalid cards selected for trade.' };
   }
 
-  // PRD constraint: a match must have enough distinct cards available. Keep at least 7 cards.
-  if (owned.length <= 7) {
-    return { success: false, rewardedCard: null, error: 'You need at least 8 cards in your collection to trade.' };
+  if (owned.length < 2) {
+    return { success: false, rewardedCard: null, error: 'You need at least 2 cards in your collection to trade.' };
   }
 
-  const reward = unowned[Math.floor(Math.random() * unowned.length)];
+  const unowned = getUnownedCards();
+  let reward: Card | null = null;
+  if (unowned.length > 0) {
+    reward = unowned[Math.floor(Math.random() * unowned.length)];
+  } else {
+    // If all cards are already owned, reward a random fighter not included in the trade
+    const alternatives = ALL_CARDS.filter((c) => c.id !== cardId1 && c.id !== cardId2);
+    reward = alternatives[Math.floor(Math.random() * alternatives.length)] || ALL_CARDS[0];
+  }
+
+  if (!reward) {
+    return { success: false, rewardedCard: null, error: 'Unable to generate trade reward.' };
+  }
+
   const newOwned = owned.filter((id) => id !== cardId1 && id !== cardId2);
-  newOwned.push(reward.id);
+  if (!newOwned.includes(reward.id)) {
+    newOwned.push(reward.id);
+  }
   saveOwnedCardIds(newOwned);
 
   return { success: true, rewardedCard: reward };

@@ -880,7 +880,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1997,
     country: 'Brazil',
     originalGameDebut: 'Street Fighter III: New Generation (1997)',
-    values: { top: 5, right: 6, bottom: 6, left: 6 },
+    values: { top: 9, right: 6, bottom: 5, left: 5 },
     bio: 'Ken’s spirited Brazilian student striving to prove his worth with basketball stunts.',
     quote: 'Master Ken taught me everything I need to win!',
     signatureColor: '#eab308',
@@ -952,7 +952,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1997,
     country: 'Unknown (Mediterranean)',
     originalGameDebut: 'Street Fighter III: New Generation (1997)',
-    values: { top: 9, right: 8, bottom: 8, left: 7 },
+    values: { top: 6, right: 6, bottom: 8, left: 9 },
     bio: 'Divinely empowered leader wielding dual command over elemental fire and ice.',
     quote: 'The mark of my divinity shall be etched upon your soul.',
     signatureColor: '#dc2626',
@@ -2138,6 +2138,8 @@ const MANUAL_STAT_CARD_IDS = new Set([
   'saisyu',
   'sakura',
   'urien',
+  'gill',
+  'sean',
 ]);
 
 export const ALL_CARDS: Card[] = ALL_CARDS_RAW.map(card => {

@@ -163,11 +163,9 @@ export default function App() {
     setCpuHand(finalCpuHand);
     setCurrentScreen('MATCH');
 
-    // Randomly select one of the four legendary Street Fighter II theme tracks before each round
+    // Advance to the next song in the non-repeating rotation before each match
     if (audio.isBGMPlaying()) {
-      const battleThemes = ['sf2_guile', 'sf2_ryu', 'sf2_ken', 'sf2_balrog'] as const;
-      const selectedTheme = battleThemes[Math.floor(Math.random() * battleThemes.length)];
-      audio.startBGM(selectedTheme);
+      audio.playNextSongInRotation();
     }
   };
 
@@ -193,21 +191,13 @@ export default function App() {
     refreshOwned();
 
     setCurrentScreen('RESULTS');
-
-    // Revert back to the Default Menu theme when match ends
-    if (audio.isBGMPlaying()) {
-      audio.startBGM('menu');
-    }
+    // Keep continuous background music playing in rotation
   };
 
   const handleQuitMatch = () => {
     // Quitting returns to menu without completing match as a win, loss, or draw
     setCurrentScreen('MENU');
-
-    // Revert back to the Default Menu theme when match ends
-    if (audio.isBGMPlaying()) {
-      audio.startBGM('menu');
-    }
+    // Keep continuous background music playing in rotation
   };
 
   return (
@@ -287,7 +277,6 @@ export default function App() {
 
         {currentScreen === 'COLLECTION' && (
           <CardCollection
-            key={`collection-${ownedCards.length}`}
             onBackToMenu={() => setCurrentScreen('MENU')}
             onRefreshOwned={refreshOwned}
           />
