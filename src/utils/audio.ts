@@ -306,6 +306,55 @@ class AudioManager {
     });
   }
 
+  public playCardFusion() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.sfxGainNode) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(680, now + 0.9);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.linearRampToValueAtTime(0.35, now + 0.7);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.95);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGainNode);
+    osc.start(now);
+    osc.stop(now + 0.95);
+  }
+
+  public playCardReveal() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.sfxGainNode) return;
+
+    // Glorious high-energy celebratory arpeggio (C5, E5, G5, B5, C6, E6)
+    const notes = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51];
+    notes.forEach((freq, i) => {
+      if (!this.ctx || !this.sfxGainNode) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const startTime = this.ctx.currentTime + i * 0.07;
+      const duration = i === notes.length - 1 ? 0.7 : 0.25;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.38, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    });
+  }
+
   // --- BACKGROUND ARCADE CHIPTUNE MUSIC ---
 
   private currentTheme: 'menu' | 'sf2_guile' | 'sf2_ryu' | 'sf2_ken' | 'sf2_balrog' = 'menu';

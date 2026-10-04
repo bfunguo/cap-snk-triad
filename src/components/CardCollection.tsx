@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { ALL_CARDS, CARD_MAP } from '../data/cards';
 import { Card, Series } from '../types/game';
 import { CardView } from './CardView';
+import { TradeRewardModal } from './TradeRewardModal';
 import { getOwnedCardIds, tradeCards } from '../utils/storage';
 import { audio } from '../utils/audio';
-import { ArrowLeft, Repeat, Search, X, Sparkles, AlertCircle, Info } from 'lucide-react';
+import { ArrowLeft, Repeat, Search, X, Sparkles, AlertCircle, Info, Plus } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface CardCollectionProps {
@@ -26,6 +27,7 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const [isTradeModalOpen, setIsTradeModalOpen] = useState<boolean>(false);
   const [tradeSelection, setTradeSelection] = useState<string[]>([]);
   const [tradeReward, setTradeReward] = useState<Card | null>(null);
+  const [tradedCardsPair, setTradedCardsPair] = useState<[Card, Card] | null>(null);
   const [tradeError, setTradeError] = useState<string | null>(null);
 
   const totalCards = ALL_CARDS.length;
@@ -67,15 +69,18 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
 
   const executeTrade = () => {
     if (tradeSelection.length !== 2) return;
+    const card1 = CARD_MAP.get(tradeSelection[0]);
+    const card2 = CARD_MAP.get(tradeSelection[1]);
+    if (!card1 || !card2) return;
+
     const res = tradeCards(tradeSelection[0], tradeSelection[1]);
     if (res.success && res.rewardedCard) {
-      audio.playTradeSuccess();
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-      });
+      setTradedCardsPair([card1, card2]);
       setTradeReward(res.rewardedCard);
+      // Close the selection modal so the animated TradeRewardModal takes center stage!
+      setIsTradeModalOpen(false);
+      setTradeSelection([]);
+
       const updated = getOwnedCardIds();
       setOwnedIds(updated);
       onRefreshOwned();
@@ -87,7 +92,19 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
   const closeTradeModal = () => {
     setIsTradeModalOpen(false);
     setTradeSelection([]);
+    setTradeError(null);
+  };
+
+  const closeTradeRewardModal = () => {
     setTradeReward(null);
+    setTradedCardsPair(null);
+  };
+
+  const handleTradeAgain = () => {
+    setTradeReward(null);
+    setTradedCardsPair(null);
+    setIsTradeModalOpen(true);
+    setTradeSelection([]);
     setTradeError(null);
   };
 
@@ -328,99 +345,163 @@ export const CardCollection: React.FC<CardCollectionProps> = ({
               Sacrifice 2 duplicate/owned fighters to recruit 1 random fighter you do not currently own.
             </p>
 
-            {tradeReward ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
-                  <Sparkles className="w-4 h-4" />
-                  <span>NEW FIGHTER RECRUITED!</span>
+            <div className="space-y-4">
+              {/* 2 Sacrifice Slots & Trade Preview */}
+              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                {/* Slot 1 */}
+                <div className="flex-1 flex flex-col items-center">
+                  {tradeSelection[0] && CARD_MAP.get(tradeSelection[0]) ? (
+                    <div
+                      className="relative group cursor-pointer"
+                      onClick={() => handleTradeCardToggle(tradeSelection[0])}
+                    >
+                      <CardView card={CARD_MAP.get(tradeSelection[0])} size="sm" />
+                      <button className="absolute -top-1.5 -right-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-full p-0.5 shadow cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900/60 flex flex-col items-center justify-center p-2 text-center text-slate-500">
+                      <Plus className="w-5 h-5 mb-1 text-slate-500" />
+                      <span className="text-[10px] font-mono leading-tight">Fighter 1</span>
+                    </div>
+                  )}
+                  <span className="text-[10px] text-slate-400 mt-1 font-mono truncate max-w-[80px]">
+                    {(tradeSelection[0] && CARD_MAP.get(tradeSelection[0])?.name) || 'Slot 1'}
+                  </span>
                 </div>
-                <div className="flex justify-center">
-                  <CardView card={tradeReward} size="lg" />
+
+                {/* Transfer Icon */}
+                <div className="flex flex-col items-center justify-center px-1">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 border border-amber-400/40 flex items-center justify-center text-amber-400 shadow">
+                    <Repeat className="w-4 h-4" />
+                  </div>
                 </div>
-                <h3 className="font-arcade text-3xl font-bold text-slate-100">
-                  {tradeReward.name}
-                </h3>
-                <p className="text-xs text-slate-400 italic">"{tradeReward.quote}"</p>
+
+                {/* Slot 2 */}
+                <div className="flex-1 flex flex-col items-center">
+                  {tradeSelection[1] && CARD_MAP.get(tradeSelection[1]) ? (
+                    <div
+                      className="relative group cursor-pointer"
+                      onClick={() => handleTradeCardToggle(tradeSelection[1])}
+                    >
+                      <CardView card={CARD_MAP.get(tradeSelection[1])} size="sm" />
+                      <button className="absolute -top-1.5 -right-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-full p-0.5 shadow cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-28 rounded-xl border-2 border-dashed border-slate-700 bg-slate-900/60 flex flex-col items-center justify-center p-2 text-center text-slate-500">
+                      <Plus className="w-5 h-5 mb-1 text-slate-500" />
+                      <span className="text-[10px] font-mono leading-tight">Fighter 2</span>
+                    </div>
+                  )}
+                  <span className="text-[10px] text-slate-400 mt-1 font-mono truncate max-w-[80px]">
+                    {(tradeSelection[1] && CARD_MAP.get(tradeSelection[1])?.name) || 'Slot 2'}
+                  </span>
+                </div>
+
+                {/* Equal / Recruit Arrow */}
+                <div className="text-slate-600 font-arcade text-2xl font-bold px-1">➜</div>
+
+                {/* Target Reward Slot */}
+                <div className="flex-1 flex flex-col items-center">
+                  <div className="w-20 h-28 rounded-xl border-2 border-dashed border-amber-400/60 bg-gradient-to-br from-amber-500/10 via-slate-900/60 to-cyan-500/10 flex flex-col items-center justify-center p-2 text-center shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+                    <Sparkles className="w-5 h-5 text-amber-400 mb-1 animate-pulse" />
+                    <span className="text-[10px] text-amber-300 font-arcade font-bold leading-tight uppercase">
+                      NEW CARD
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-amber-400/80 mt-1 font-mono">Guaranteed</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+                <span className="text-slate-300 font-semibold">
+                  Select 2 Fighters to Trade:{' '}
+                  <span className={tradeSelection.length === 2 ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                    {tradeSelection.length}/2 Selected
+                  </span>
+                </span>
+                {tradeSelection.length > 0 && (
+                  <button
+                    onClick={() => {
+                      audio.playCardSelect();
+                      setTradeSelection([]);
+                    }}
+                    className="text-rose-400 hover:underline text-[11px] cursor-pointer"
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+
+              {tradeError && (
+                <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{tradeError}</span>
+                </div>
+              )}
+
+              {/* Grid of Owned Cards for Trade Selection */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-60 overflow-y-auto p-2 bg-slate-950/50 rounded-xl border border-slate-800">
+                {ownedIds.map((cardId) => {
+                  const card = CARD_MAP.get(cardId);
+                  if (!card) return null;
+                  const isSelected = tradeSelection.includes(cardId);
+
+                  return (
+                    <div
+                      key={card.id}
+                      onClick={() => handleTradeCardToggle(card.id)}
+                      className={`cursor-pointer flex flex-col items-center p-1 rounded-lg border transition-all ${
+                        isSelected
+                          ? 'border-amber-400 bg-amber-500/20 scale-105 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
+                          : 'border-transparent hover:border-slate-700 hover:bg-slate-800/40'
+                      }`}
+                    >
+                      <CardView card={card} size="sm" isSelected={isSelected} />
+                      <span className="text-[9px] text-slate-300 font-mono mt-1 truncate max-w-full">
+                        {isSelected ? '✓ Selected' : card.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Trade in 2 fighters to unlock 1 guaranteed new fighter.</span>
+                </div>
 
                 <button
-                  onClick={closeTradeModal}
-                  className="py-2.5 px-6 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold font-arcade text-xl tracking-wider uppercase cursor-pointer"
+                  onClick={executeTrade}
+                  disabled={tradeSelection.length !== 2}
+                  className={`py-2.5 px-6 rounded-xl font-bold flex items-center gap-2 uppercase tracking-wider text-xs transition-all ${
+                    tradeSelection.length === 2
+                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-[0_0_18px_rgba(245,158,11,0.4)] animate-pulse'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                  }`}
                 >
-                  RETURN TO ARCHIVE
+                  <Repeat className="w-4 h-4" />
+                  <span>CONFIRM TRADE</span>
                 </button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-semibold">
-                    Cards to Exchange: <span className="text-amber-400">{tradeSelection.length}/2 Selected</span>
-                  </span>
-                  {tradeSelection.length > 0 && (
-                    <button
-                      onClick={() => setTradeSelection([])}
-                      className="text-rose-400 hover:underline text-[11px]"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                {tradeError && (
-                  <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{tradeError}</span>
-                  </div>
-                )}
-
-                {/* Grid of Owned Cards for Trade Selection */}
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-64 overflow-y-auto p-1 bg-slate-950/50 rounded-xl border border-slate-800">
-                  {ownedIds.map((cardId) => {
-                    const card = CARD_MAP.get(cardId);
-                    if (!card) return null;
-                    const isSelected = tradeSelection.includes(cardId);
-
-                    return (
-                      <div
-                        key={card.id}
-                        onClick={() => handleTradeCardToggle(card.id)}
-                        className={`cursor-pointer flex flex-col items-center p-1 rounded-lg border transition-all ${
-                          isSelected
-                            ? 'border-amber-400 bg-amber-500/20 scale-105'
-                            : 'border-transparent hover:border-slate-700'
-                        }`}
-                      >
-                        <CardView card={card} size="sm" isSelected={isSelected} />
-                        <span className="text-[9px] text-slate-300 font-mono mt-1 truncate max-w-full">
-                          {isSelected ? '✓ Selected' : card.name}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                    <Info className="w-3.5 h-3.5" />
-                    <span>Unlocks 1 guaranteed unowned card.</span>
-                  </div>
-
-                  <button
-                    onClick={executeTrade}
-                    disabled={tradeSelection.length !== 2}
-                    className={`py-2.5 px-6 rounded-xl font-bold flex items-center gap-2 uppercase tracking-wider text-xs transition-all ${
-                      tradeSelection.length === 2
-                        ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 cursor-pointer shadow-lg'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                    }`}
-                  >
-                    <Repeat className="w-4 h-4" />
-                    <span>CONFIRM TRADE</span>
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Animated New Card Reveal & Pop-up Modal */}
+      {tradeReward && (
+        <TradeRewardModal
+          rewardCard={tradeReward}
+          tradedCards={tradedCardsPair}
+          onClose={closeTradeRewardModal}
+          onTradeAgain={handleTradeAgain}
+          canTradeAgain={ownedIds.length >= 8}
+        />
       )}
     </div>
   );
