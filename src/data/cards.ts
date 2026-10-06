@@ -134,6 +134,9 @@ import tungComicImg from '../assets/images/udon_tung_fatalfury_1790884722251.jpg
 import jenetComicImg from '../assets/images/udon_jenet_garou_1790884731977.jpg';
 import hotaruComicImg from '../assets/images/udon_hotaru_garou_1790884742756.jpg';
 
+import sodomComicImg from '../assets/images/sodom_comic_1791311538671.jpg';
+import birdieComicImg from '../assets/images/birdie_comic_1791311547693.jpg';
+
 const POPULARITY_MAP: Record<string, number> = {
   'ryu': 100,
   'chun-li': 100,
@@ -761,6 +764,42 @@ const ALL_CARDS_RAW: Card[] = [
     avatarSymbol: 'star',
     imageUrl: rmikaComicImg,
   },
+  {
+    id: 'sodom',
+    name: 'Sodom',
+    title: 'The Kabuki Vigilante',
+    series: 'Street Fighter Alpha 3',
+    earliestGame: 'Street Fighter Alpha (1995)',
+    releaseYear: 1995,
+    country: 'United States',
+    originalGameDebut: 'Final Fight (1989)',
+    values: { top: 1, right: 7, bottom: 2, left: 9 },
+    bio: 'Mad Gear boss and Japanophile who fights with dual Jitte truncheons in samurai armor and kabuto helmet.',
+    quote: 'Welcome to the world of Samurai culture! Butsumetsu!',
+    signatureColor: '#2563eb',
+    accentColor: '#dc2626',
+    fightingStyle: 'Ninjutsu & Dual Jitte Combat',
+    avatarSymbol: 'sword',
+    imageUrl: sodomComicImg,
+  },
+  {
+    id: 'birdie',
+    name: 'Birdie',
+    title: 'The Mohawk Bouncer',
+    series: 'Street Fighter Alpha 3',
+    earliestGame: 'Street Fighter Alpha (1995)',
+    releaseYear: 1995,
+    country: 'England',
+    originalGameDebut: 'Street Fighter (1987)',
+    values: { top: 6, right: 3, bottom: 9, left: 2 },
+    bio: 'Towering British punk bouncer who joined Shadaloo, crushing opponents with chains and brutal headbutts.',
+    quote: 'I will crush ya like an empty tin can!',
+    signatureColor: '#475569',
+    accentColor: '#eab308',
+    fightingStyle: 'Brawling & Chain Grappling',
+    avatarSymbol: 'fist',
+    imageUrl: birdieComicImg,
+  },
 
   // --- STREET FIGHTER III (Earliest: 1997-1999) ---
   {
@@ -1087,7 +1126,7 @@ const ALL_CARDS_RAW: Card[] = [
   { id: 'vanessa', name: 'Vanessa', title: 'The Professional Boxer', series: 'The King of Fighters 2001', earliestGame: 'The King of Fighters 2000', releaseYear: 2001, country: 'United States', originalGameDebut: 'The King of Fighters 2000', values: { top: 7, right: 8, bottom: 6, left: 7 }, bio: 'Pro boxer juggling family and spy work.', quote: 'Time for work.', signatureColor: '#2563eb', accentColor: '#ffffff', fightingStyle: 'Boxing', avatarSymbol: 'fist', imageUrl: vanessaImg },
   { id: 'vice', name: 'Vice', title: 'The Brutal Enforcer', series: "The King of Fighters '97", earliestGame: "The King of Fighters '96", releaseYear: 1997, country: 'Unknown', originalGameDebut: "The King of Fighters '96", values: { top: 7, right: 6, bottom: 7, left: 7 }, bio: 'Ruthless enforcer with immense strength.', quote: 'You’re weak.', signatureColor: '#9d174d', accentColor: '#ffffff', fightingStyle: 'Brawling', avatarSymbol: 'skull', imageUrl: viceImg },
   { id: 'yashiro', name: 'Yashiro Nanakase', title: 'The Punk Fighter', series: "The King of Fighters '97", earliestGame: "The King of Fighters '97", releaseYear: 1997, country: 'Japan', originalGameDebut: "The King of Fighters '97", values: { top: 8, right: 7, bottom: 8, left: 7 }, bio: 'Leader of the New Faces Team, connected to Orochi.', quote: 'This is the end.', signatureColor: '#7e22ce', accentColor: '#ffffff', fightingStyle: 'Power', avatarSymbol: 'fist', imageUrl: yashiroImg },
-  { id: 'zero', name: 'Zero', title: 'The NESTS Commander', series: 'The King of Fighters 2001', earliestGame: 'The King of Fighters 2000', releaseYear: 2001, country: 'Unknown', originalGameDebut: 'The King of Fighters 2000', values: { top: 9, right: 8, bottom: 8, left: 9 }, bio: 'High-ranking NESTS commander.', quote: 'Prepare for defeat.', signatureColor: '#475569', accentColor: '#ffffff', fightingStyle: 'Power', avatarSymbol: 'sword', imageUrl: zeroImg },
+  { id: 'zero', name: 'Zero', title: 'The NESTS Commander', series: 'The King of Fighters 2001', earliestGame: 'The King of Fighters 2000', releaseYear: 2001, country: 'Unknown', originalGameDebut: 'The King of Fighters 2000', values: { top: 9, right: 3, bottom: 6, left: 9 }, bio: 'High-ranking NESTS commander.', quote: 'Prepare for defeat.', signatureColor: '#475569', accentColor: '#ffffff', fightingStyle: 'Power', avatarSymbol: 'sword', imageUrl: zeroImg },
   {
     id: 'iori-yagami',
     name: 'Iori Yagami',
@@ -1225,7 +1264,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 2001,
     country: 'Unknown (NESTS)',
     originalGameDebut: 'The King of Fighters 2001 (2001)',
-    values: { top: 9, right: 8, bottom: 9, left: 8 },
+    values: { top: 7, right: 9, bottom: 2, left: 9 },
     bio: 'Megalopolis emperor who seized control of the NESTS Syndicate, proclaiming himself the true God of earth.',
     quote: 'Kneel before divinity! I shall sculpt a new genesis!',
     signatureColor: '#7e22ce',
@@ -1353,7 +1392,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1996,
     country: 'Germany',
     originalGameDebut: 'Fatal Fury 2 (1992)',
-    values: { top: 9, right: 8, bottom: 8, left: 7 },
+    values: { top: 9, right: 9, bottom: 5, left: 4 },
     bio: 'Imposing German aristocrat who entered the Boss Team with Geese Howard to test his colossal Kaiser Wave.',
     quote: 'I will play you a requiem! Dies Irae!',
     signatureColor: '#7c3aed',
@@ -1937,7 +1976,7 @@ const ALL_CARDS_RAW: Card[] = [
     releaseYear: 1993,
     country: 'Japan',
     originalGameDebut: 'Samurai Shodown (1993)',
-    values: { top: 9, right: 9, bottom: 8, left: 8 },
+    values: { top: 8, right: 7, bottom: 6, left: 6 },
     bio: 'Resurrected rebellion leader possessed by the demon Ambrosia, controlling a levitating magical sphere orb.',
     quote: 'Tremble before the dark rebirth of Ambrosia!',
     signatureColor: '#c084fc',
@@ -2140,6 +2179,12 @@ const MANUAL_STAT_CARD_IDS = new Set([
   'urien',
   'gill',
   'sean',
+  'krauser',
+  'amakusa',
+  'igniz',
+  'zero',
+  'sodom',
+  'birdie',
 ]);
 
 export const ALL_CARDS: Card[] = ALL_CARDS_RAW.map(card => {
