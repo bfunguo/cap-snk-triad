@@ -1,0 +1,6 @@
+{
+  "name": "Capcom vs SNK Triad - Card Clash",
+  "description": "A Triple Triad-style tactical card battle game featuring legendary fighting franchises from Street Fighter, Fatal Fury, Samurai Shodown, and The Last Blade.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
